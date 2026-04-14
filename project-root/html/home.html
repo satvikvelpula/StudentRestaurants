@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Restaurants</title>
+  <link rel="stylesheet" href="../css/home_style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <!-- Your module -->
+  <script type="module" src="../components/map.js"></script>
+</head>
+<body>
+
+  <header class="header">
+    <h1>Student Restaurants</h1>
+    <p>Find daily and weekly menus across Finland</p>
+  </header>
+
+  <main class="container">
+
+    <!-- Filters -->
+    <section class="filters">
+      <input type="text" placeholder="Search restaurant...">
+      <select>
+        <option>All Cities</option>
+        <option>Helsinki</option>
+        <option>Espoo</option>
+      </select>
+      <select>
+        <option>All Providers</option>
+        <option>Sodexo</option>
+        <option>Compass</option>
+      </select>
+    </section>
+
+    <!-- Content Layout -->
+    <section class="content">
+
+      <!-- Restaurant List -->
+      <div class="restaurant-list">
+        <h2 class = "section-title">Restaurants</h2>
+
+        <div class="restaurant-card highlight">
+          <h3>Restaurant Name</h3>
+          <p>Address, City</p>
+        </div>
+
+        <div class="restaurant-card">
+          <h3>Another Restaurant</h3>
+          <p>Address, City</p>
+        </div>
+
+      </div>
+
+      <!-- Map -->
+      <div class="map">
+        <h2>Map</h2>
+          <div id="map" style="height: 400px;">
+            <div id="map-popup" class="map-popup hidden"></div>
+          </div>
+          
+      </div>
+      
+
+    </section>
+
+  </main>
+
+  <!-- Modal -->
+  <div class="modal">
+    <div class="modal-box">
+      <button class="close-btn">×</button>
+      <h2>Restaurant Name</h2>
+      <ul>
+        <li>Menu item 1</li>
+        <li>Menu item 2</li>
+      </ul>
+    </div>
+  </div>
+
+</body>
+</html>

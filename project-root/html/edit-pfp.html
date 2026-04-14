@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Profile Picture</title>
+  <link rel="stylesheet" href="../css/home_style.css">
+  <link rel="stylesheet" href="../css/auth_style.css">
+  <script type="module" src="../components/edit.js"></script>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+          <h2 class="auth-title">Edit Profile</h2>
+      
+          <!-- Profile Picture Section -->
+          <div class="profile-pic-section">
+
+            <img
+              src="https://via.placeholder.com/80"
+              alt="Profile Picture"
+              class="profile-pic"
+              id="profile-preview"
+            >
+          
+            <label for="profilePic" class="change-pic-btn">
+              Change Picture
+            </label>
+          
+            <input type="file" id="profilePic" accept="image/*">
+          
+          </div>
+          
+      
+          <!-- Edit Form -->
+          <form class="auth-form" id="auth-form">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input type="text" id="username" placeholder="Your username">
+            </div>
+            
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="email" placeholder=""disabled>
+            </div>
+            
+            <div class="form-group">
+              <label for="password">New Password</label>
+              <input type="password" id="password" placeholder="Leave empty to keep current password">
+            </div>
+            
+      
+            <!-- Favorite Restaurant Section -->
+            <div class="form-group">
+              <label for="favoriteRestaurant">Favorite Restaurant</label>
+              <input
+                  type="text"
+                  id="restaurant-search"
+                  placeholder="Search restaurant..."
+                  class="search-input"
+              />
+              <div class="favorite-restaurant-slots" id="favorite-container">
+                <!--
+                <div class="restaurant-card favorite active">Pizza Place</div>
+                <div class="restaurant-card favorite">Sushi Bar</div>
+                <div class="restaurant-card favorite">Burger Joint</div>
+              -->
+              </div>
+            </div>
+      
+            <button type="submit" class="auth-button">Save Changes</button>
+          </form>
+      
+          <div class="auth-footer">
+            <a>Back to Home</a>
+          </div>
+        </div>
+      </div>      
+  
+
+</body>

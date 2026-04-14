@@ -1,0 +1,352 @@
+:root {
+    --bg: #f7f8fa;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --text: #1f2933;
+    --subtext: #6b7280;
+    --hover: #f1f3f5;
+    --accent: #d1d5db;
+  }
+  
+
+
+
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  
+  .header {
+    text-align: center;
+    padding: 32px 20px;
+    background: transparent;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .header h1 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .header p {
+    font-size: 0.95rem;
+    color: var(--subtext);
+  }
+
+  /* Container */
+  .container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+  }
+  
+  /* Filters */
+  .filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .filters input,
+.filters select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.filters input:focus,
+.filters select:focus {
+  outline: none;
+  border-color: #9ca3af;
+}
+  /* Layout */
+  .content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  /* Restaurant List */
+  .restaurant-list {
+    background: var(--card);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  
+
+  .restaurant-card {
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px; /* controls spacing between name + address */
+  }
+  
+  .restaurant-card:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+
+
+  .restaurant-card h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0; /* remove default margins */
+    line-height: 1.2;
+  }
+  
+
+  .restaurant-card p {
+    font-size: 0.85rem;
+    color: var(--subtext);
+    margin: 0;
+    line-height: 1.2;
+  }
+
+  
+  .restaurant-card:hover {
+    background: var(--hover);
+  }
+
+
+  .restaurant-card.highlight {
+    background: #eef2f7;
+    border-left: 3px solid #9ca3af;
+    padding-left: 15px; /* compensate for border */
+  }
+  
+  /* Map */
+  .map {
+    background: var(--card);
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    padding: 16px;
+    position: relative; 
+    overflow: hidden;
+  }
+
+
+  #map {
+    height: 400px;
+    position: relative; /* 🔥 IMPORTANT */
+    overflow: hidden;
+  }
+
+
+  #map-popup {
+    position: absolute;
+    z-index: 1000;
+  
+    transform: translate(-50%, -140%);
+    pointer-events: none;
+  }
+
+
+  .hidden {
+    display: none;
+  }
+
+  .map-popup {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  
+    min-width: 160px;
+    text-align: center;
+  }
+
+  .popup-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  
+  .popup-subtext {
+    font-size: 0.8rem;
+    color: var(--subtext);
+  }
+
+  .map-popup.nearest {
+    border-left: 3px solid #16a34a;
+    background: #f0fdf4;
+  }
+
+  .map-popup.favourite {
+    border-left: 3px solid #eab308; /* yellow */
+    background: #fefce8;
+  }
+
+  .map-popup::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+  
+    width: 10px;
+    height: 10px;
+  
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  
+    transform: translateX(-50%) rotate(45deg);
+  }
+
+  .map-popup::after {
+    content: "";
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+  
+    width: 10px;
+    height: 10px;
+  
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  
+    transform: translateX(-50%) rotate(45deg);
+  }
+  
+
+  .content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px; /* increased from 20px */
+  }
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+
+
+  .section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text);
+  
+    padding: 14px 18px;
+    margin: 0;
+  
+    border-bottom: 1px solid var(--border);
+    background: #fafafa;
+  
+    letter-spacing: 0.3px;
+  }
+
+  .filters input,
+.filters select {
+  font-size: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+}
+
+
+.filters select {
+    padding: 10px 36px 10px 12px; /* extra right space */
+  
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+  
+    background-color: white;
+  
+    /* Custom arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%236b7280' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+  }
+
+
+
+  .filters input:focus,
+.filters select:focus {
+  outline: none;
+  border-color: #9ca3af;
+}
+
+.filters input:hover,
+.filters select:hover {
+  background: #fafafa;
+}
+
+.filters {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .filters input {
+    flex: 1; /* search bar takes more space */
+  }
+  
+  .filters select {
+    min-width: 160px;
+  }
+  
+  /* Modal */
+  .modal {
+    display: none; /* later toggle with JS */
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .modal-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+  }
+  
+  .close-btn {
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    border: none;
+    background: none;
+    font-size: 24px;
+    cursor: pointer;
+  }
+
+  
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .content {
+      grid-template-columns: 1fr;
+    }
+  
+    .filters {
+      flex-direction: column;
+    }
+  }
+  
