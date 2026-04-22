@@ -93,28 +93,6 @@
   }
 
 
-/*
-.profile-pic-carousel {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-
-
-  scrollbar-width: none; 
-  -ms-overflow-style: none;
-}
-
-.profile-pic-carousel::-webkit-scrollbar {
-  display: none; 
-}
-
-.profile-pic-carousel::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
-}
-*/
-
 /* Profile Picture Section */
 .profile-pic-section {
   display: flex;

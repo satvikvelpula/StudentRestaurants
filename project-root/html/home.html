@@ -67,17 +67,29 @@
 
   </main>
 
-  <!-- Modal -->
-  <div class="modal">
+  <div id="modal" class="modal hidden">
     <div class="modal-box">
-      <button class="close-btn">×</button>
-      <h2>Restaurant Name</h2>
-      <ul>
-        <li>Menu item 1</li>
-        <li>Menu item 2</li>
-      </ul>
+      
+      <button class="close-btn" id="modal-close">×</button>
+  
+      <!-- <h2 id="modal-title">Restaurant</h2> -->
+
+      <div id="restaurant-profile"></div>
+  
+      <!-- Tabs -->
+      <div class="menu-tabs">
+        <button id="tab-daily" class="tab active">Today</button>
+        <button id="tab-weekly" class="tab">This Week</button>
+      </div>
+  
+      <!-- Content -->
+      <div id="menu-content">
+        <p>Loading...</p>
+      </div>
+  
     </div>
   </div>
+  
 
 </body>
 </html>

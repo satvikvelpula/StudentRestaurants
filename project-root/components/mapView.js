@@ -22,7 +22,7 @@ export function createMap(lat, lng) {
   
     map.setMaxBounds(finlandBounds);
   
-    L.tileLayer(/*"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"*/"https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
       maxZoom: 18
     }).addTo(map);
   
@@ -66,31 +66,69 @@ export function createMap(lat, lng) {
     }
   }
   
-  
-
-  export function addRestaurantMarker(map, restaurant, icon, isNearest, isFavorite, onClick) {
+  export function addRestaurantMarker(map, restaurant, icon, onClick, user, nearest) {
     const [lng, lat] = restaurant.location.coordinates;
   
     const options = icon ? { icon } : {};
-  
     const marker = L.marker([lat, lng], options).addTo(map);
+  
+    const isFavourite = restaurant._id === user?.favouriteRestaurant;
+    const isNearest = restaurant._id === nearest?._id;
+  
+    const distance =
+      restaurant.distance < 1
+        ? `${Math.round(restaurant.distance * 1000)} m`
+        : `${restaurant.distance.toFixed(1)} km`;
+  
+    let typeClass = "";
+    if (isFavourite) typeClass = "favourite";
+    else if (isNearest) typeClass = "nearest";
 
-    /*marker.bindPopup(
-        `${restaurant.name} ${isNearest ? "🟢" : ""}\n${restaurant.distance.toFixed(2)} km`,
-        {
+    const html = `
+  <div class="popup-title">
+    ${restaurant.name}
+    ${isFavourite ? "(favourite)" : isNearest ? "(closest)" : ""}
+  </div>
+  <div class="popup-subtext">
+    ${distance} away
+  </div>
+`;
+
+    createTooltip(map, marker, html, typeClass);
+
+    /*
+  
+    marker.bindTooltip(
+      `
+      <div class="map-popup ${typeClass}">
+        <div class="popup-title">
+          ${restaurant.name}
+          ${isFavourite ? "(favourite)" : isNearest ? "(closest)" : ""}
+        </div>
+        <div class="popup-subtext">
+          ${distance} away
+        </div>
+      </div>
+      `,
+      {
         direction: "top",
-        opacity: 0.9
-        }
-    );*/
+        offset: [0, -12],
+        opacity: 1
+      }
+    );
+
+    */
+
+    
   
     if (onClick) {
       marker.on("click", () => {
         const latlng = marker.getLatLng();
-        
-        onClick(restaurant, latlng, isNearest, isFavorite);
+        onClick(restaurant, latlng);
       });
     }
-  }  
+  }
+  
 
 
 
@@ -109,9 +147,22 @@ export function createMap(lat, lng) {
       popup.style.left = `${point.x}px`;
       popup.style.top = `${point.y}px`;
     };
+
   
     map._popupMoveHandler();
+
+    popup.style.visibility = "visible";
+
+    popup.getBoundingClientRect();
+
+    requestAnimationFrame(() => {
+      popup.style.opacity = "1";
+      popup.style.transform = "translate(-50%, -140%) scale(1)";
+    });
+
+
     map.on("move", map._popupMoveHandler);
+    
   } 
 
 
@@ -172,7 +223,13 @@ export function createMap(lat, lng) {
 
   export function hideCustomPopup() {
     const popup = document.getElementById("map-popup");
-    popup.classList.add("hidden");
+    popup.style.opacity = "0";
+    popup.style.transform = "translate(-50%, -140%) scale(0.92)";
+
+    setTimeout(() => {
+    popup.style.visibility = "hidden";  
+    }, 180);
+
   }
 
   let isFetchingAddress = false; // GLOBAL FETCHING ADDRESS CHECKER
@@ -204,5 +261,62 @@ export function createMap(lat, lng) {
       isFetchingAddress = false;
     }
   }
+  
+  function createTooltip(map, marker, html, typeClass = "") {
+    const tooltip = document.createElement("div");
+    tooltip.className = `map-tooltip ${typeClass}`;
+    tooltip.innerHTML = `
+      <div class="map-popup ${typeClass}">
+        ${html}
+      </div>
+    `;
+  
+    document.getElementById("map").appendChild(tooltip);
+  
+    const update = () => {
+      const pos = map.latLngToContainerPoint(marker.getLatLng());
+  
+      tooltip.style.left = `${pos.x}px`;
+      tooltip.style.top = `${pos.y - 30}px`;
+    };
+  
+    const show = () => {
+        tooltip.style.visibility = "visible";
+      
+        // force browser to register start state
+        tooltip.getBoundingClientRect();
+      
+        requestAnimationFrame(() => {
+          tooltip.style.opacity = "1";
+          tooltip.style.transform = "translate(-50%, -110%) scale(1)";
+        });
+      };
+  
+    const hide = () => {
+        tooltip.style.opacity = "0";
+        tooltip.style.transform = "translate(-50%, -110%) scale(0.96)";
+
+        setTimeout(() => {
+            tooltip.style.visibility = "hidden";
+        }, 140);
+    };
+      
+  
+    // tooltip.style.display = "none";
+  
+    // Hover behavior
+    marker.on("mouseover", show);
+    marker.on("mouseout", hide);
+  
+    // keep position synced
+    map.on("zoom move", update);
+  
+    marker.on("remove", () => {
+      map.off("zoom move", update);
+      tooltip.remove();
+    });
+  }
+  
+  
   
   
