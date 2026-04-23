@@ -29,6 +29,86 @@ export async function initMap() {
 
     const nearest = getNearest(enriched);
 
+    // From here starting - populating filter sets:
+    function extractFilterOptions(restaurants) {
+        const cities = new Set();
+        const companies = new Set();
+      
+        restaurants.forEach(r => {
+          if (r.city) cities.add(r.city);
+          if (r.company) companies.add(r.company);
+        });
+      
+        return {
+          cities: Array.from(cities).sort(),
+          companies: Array.from(companies).sort()
+        };
+      }
+    
+    const filterSets = extractFilterOptions(enriched);
+    console.log(filterSets.cities);
+    console.log(filterSets.companies); 
+
+
+    function populateFilters(cities, companies) {
+        const citySelect = document.getElementById("city-filter");
+        const companySelect = document.getElementById("company-filter");
+      
+        cities.forEach(city => {
+          const option = document.createElement("option");
+          option.value = city;
+          option.textContent = city;
+          citySelect.appendChild(option);
+        });
+      
+        companies.forEach(company => {
+          const option = document.createElement("option");
+          option.value = company;
+          option.textContent = company;
+          companySelect.appendChild(option);
+        });
+      }
+
+    populateFilters(filterSets.cities, filterSets.companies);
+
+    // Populating filter sets done
+
+
+    function filterRestaurants(restaurants, filters) { // filters is filter input box values (citySelect.value, companySelect.value)
+        return restaurants.filter(r => {
+          const matchCity =
+            !filters.city || r.city === filters.city;
+      
+          const matchCompany =
+            !filters.company || r.company === filters.company;
+      
+          return matchCity && matchCompany;
+        });
+      }
+
+    function setupFilterEvents(restaurants, map, nearest) {
+        const citySelect = document.getElementById("city-filter");
+        const companySelect = document.getElementById("company-filter");
+
+        function applyFilters() {
+            const filters = {
+            city: citySelect.value,
+            company: companySelect.value
+            };
+
+            const filtered = filterRestaurants(restaurants, filters);
+
+            updateUI(filtered, map, nearest);
+        }
+
+        citySelect.addEventListener("change", applyFilters);
+        companySelect.addEventListener("change", applyFilters);
+    }
+      
+
+    
+
+
     const userIcon = L.icon({
         iconUrl: 'https://grassroots.tools/static/scripts/leaflet/images/marker-icon-red.png',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
@@ -36,7 +116,7 @@ export async function initMap() {
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
         shadowSize: [41, 41]
-      });
+      }); 
 
     // NEAREST MARKER
     const greenIcon = L.icon({
