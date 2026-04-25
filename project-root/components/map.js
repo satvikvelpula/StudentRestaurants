@@ -18,7 +18,7 @@ export async function initMap() {
       longitude: 24.9384
     };
   }
-  
+
   navigator.geolocation.getCurrentPosition((pos) => {
     // const coords = getTestLocation(pos.coords)
     const { latitude, longitude } = pos.coords;
@@ -27,7 +27,8 @@ export async function initMap() {
 
     const enriched = enrichRestaurants(restaurants, latitude, longitude);
 
-    const nearest = getNearest(enriched);
+    // const nearest = getNearest(enriched); Already defined in initMap.js
+
 
     // From here starting - populating filter sets:
     function extractFilterOptions(restaurants) {
@@ -73,20 +74,100 @@ export async function initMap() {
 
     // Populating filter sets done
 
+    let allRestaurants = enriched;
+    let restaurantMarkers = [];
+    let isUpdating = false;
 
-    function filterRestaurants(restaurants, filters) { // filters is filter input box values (citySelect.value, companySelect.value)
-        return restaurants.filter(r => {
-          const matchCity =
-            !filters.city || r.city === filters.city;
+    async function updateUI(filteredRestaurants) {
+        if (isUpdating) return;
+        isUpdating = true; 
+
+        try {
+
+            const user = getUser();
+
+            await Promise.all(
+                restaurantMarkers.map(m => fadeOutMarker(m))
+            );
+
+            restaurantMarkers.forEach(m => {
+                if (m && map.hasLayer(m)) {
+                    map.removeLayer(m);
+                }
+            });
+
+            restaurantMarkers = [];
+
+            if (!filteredRestaurants.length) {
+                renderRestaurantList([], map, null);
+                return;
+            }
+
+            const nearest = getNearest(filteredRestaurants);
+        
+            filteredRestaurants.forEach(r => {
+            const icon = getRestaurantIcon(r, user, nearest, {
+                favourite: favouriteIcon,
+                nearest: greenIcon
+            });
+        
+            const marker = addRestaurantMarker(
+                map,
+                r,
+                icon,
+                (restaurant, latlng) => {
+                openRestaurant(restaurant, latlng, map, nearest);
+                },
+                user,
+                nearest
+            );
+
+            if (marker?._icon) {
+                marker._icon.classList.add("marker-fade-in");
+              }              
+        
+            if (marker) {
+                restaurantMarkers.push(marker);
+            }
+            }); 
+            renderRestaurantList(filteredRestaurants, map, nearest);
+        } catch {
+            console.error("updateUI failed: ", err)
+        } finally {
+            isUpdating = false;
+        }
+    
+      }
+    
       
-          const matchCompany =
-            !filters.company || r.company === filters.company;
+      function fadeOutMarker(marker) {
+        return new Promise(resolve => {
+          if (!marker?._icon) return resolve();
       
-          return matchCity && matchCompany;
+          const el = marker._icon;
+          el.style.transition = "opacity 150ms ease";
+          el.style.opacity = "0";
+      
+          setTimeout(resolve, 150);
+        });
+      }      
+      
+
+    function filterRestaurants(allRestaurants, filters) { // filters is filter input box values (citySelect.value, companySelect.value)
+        if (!Array.isArray(allRestaurants)) return [];
+        return allRestaurants.filter(r => {
+            if (!r) return false;
+            const matchCity =
+                !filters.city || r.city === filters.city;
+        
+            const matchCompany =
+                !filters.company || r.company === filters.company;
+        
+            return matchCity && matchCompany;
         });
       }
 
-    function setupFilterEvents(restaurants, map, nearest) {
+    function setupFilterEvents() {
         const citySelect = document.getElementById("city-filter");
         const companySelect = document.getElementById("company-filter");
 
@@ -96,18 +177,16 @@ export async function initMap() {
             company: companySelect.value
             };
 
-            const filtered = filterRestaurants(restaurants, filters);
-
-            updateUI(filtered, map, nearest);
+            const filtered = filterRestaurants(allRestaurants, filters);
+            console.log(filtered);
+            updateUI(filtered); 
         }
 
         citySelect.addEventListener("change", applyFilters);
         companySelect.addEventListener("change", applyFilters);
     }
-      
 
-    
-
+    setupFilterEvents();
 
     const userIcon = L.icon({
         iconUrl: 'https://grassroots.tools/static/scripts/leaflet/images/marker-icon-red.png',
@@ -143,12 +222,22 @@ export async function initMap() {
         handleUserMarkerClick(map, latlng);
       });
 
+    map.on("click", () => {
+        hideCustomPopup();
+    });
+
+    updateUI(allRestaurants);
+    
+
+    /*
+
     const user = getUser();
     const icons = {
         favourite: favouriteIcon,
         nearest: greenIcon
       };
 
+      
 
     enriched.forEach((r) => {
         const icon = getRestaurantIcon(r, user, nearest, icons);
@@ -170,6 +259,8 @@ export async function initMap() {
       });
 
       renderRestaurantList(enriched, map, nearest);
+
+      */
       
       
   });

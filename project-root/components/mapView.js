@@ -67,18 +67,46 @@ export function createMap(lat, lng) {
   }
   
   export function addRestaurantMarker(map, restaurant, icon, onClick, user, nearest) {
-    const [lng, lat] = restaurant.location.coordinates;
+
+
+    if (!restaurant?.location?.coordinates) {
+        console.warn("Missing coordinates:", restaurant);
+        return null;
+    }
   
+    const [lng, lat] = restaurant.location.coordinates;
+
+    if (typeof lat !== "number" || typeof lng !== "number") {
+        console.warn("Invalid coordinates:", restaurant);
+        return null;
+      }
+
     const options = icon ? { icon } : {};
     const marker = L.marker([lat, lng], options).addTo(map);
   
     const isFavourite = restaurant._id === user?.favouriteRestaurant;
     const isNearest = restaurant._id === nearest?._id;
+
+      // 4. Safe distance
+    let distanceText = "N/A";
+
+    if (typeof restaurant.distance === "number") {
+        distanceText =
+        restaurant.distance < 1
+            ? `${Math.round(restaurant.distance * 1000)} m`
+            : `${restaurant.distance.toFixed(1)} km`;
+    } else {
+        console.warn("Missing distance:", restaurant);
+    }
+
+    /*
   
     const distance =
       restaurant.distance < 1
         ? `${Math.round(restaurant.distance * 1000)} m`
         : `${restaurant.distance.toFixed(1)} km`;
+
+    */
   
     let typeClass = "";
     if (isFavourite) typeClass = "favourite";
@@ -90,34 +118,11 @@ export function createMap(lat, lng) {
     ${isFavourite ? "(favourite)" : isNearest ? "(closest)" : ""}
   </div>
   <div class="popup-subtext">
-    ${distance} away
+    ${distanceText} away
   </div>
 `;
 
     createTooltip(map, marker, html, typeClass);
-
-    /*
-  
-    marker.bindTooltip(
-      `
-      <div class="map-popup ${typeClass}">
-        <div class="popup-title">
-          ${restaurant.name}
-          ${isFavourite ? "(favourite)" : isNearest ? "(closest)" : ""}
-        </div>
-        <div class="popup-subtext">
-          ${distance} away
-        </div>
-      </div>
-      `,
-      {
-        direction: "top",
-        offset: [0, -12],
-        opacity: 1
-      }
-    );
-
-    */
 
     
   
@@ -127,6 +132,8 @@ export function createMap(lat, lng) {
         onClick(restaurant, latlng);
       });
     }
+
+    return marker;
   }
   
 
@@ -279,6 +286,8 @@ export function createMap(lat, lng) {
       tooltip.style.left = `${pos.x}px`;
       tooltip.style.top = `${pos.y - 30}px`;
     };
+
+    update();
   
     const show = () => {
         tooltip.style.visibility = "visible";
@@ -309,7 +318,9 @@ export function createMap(lat, lng) {
     marker.on("mouseout", hide);
   
     // keep position synced
-    map.on("zoom move", update);
+    // map.on("zoom move", update);
+    map.on("move", update);
+    map.on("zoomend", update);
   
     marker.on("remove", () => {
       map.off("zoom move", update);
