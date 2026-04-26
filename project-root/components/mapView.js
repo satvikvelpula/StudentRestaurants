@@ -65,7 +65,7 @@ export function createMap(lat, lng) {
     }
   }  
 
-  async function getAddressSafe(lat, lng) {
+  export async function getAddressSafe(lat, lng) {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`

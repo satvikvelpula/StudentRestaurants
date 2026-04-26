@@ -1,8 +1,10 @@
 import { getRestaurants } from "../api/restaurants.js";
 import { updateUser } from "../api/users.js";
-import { requireAuth, getUser } from "../api/auth.js";
+import { getUser } from "../api/auth.js";
+import { requireAuth } from "../utils/requireAuth.js";
 import { uploadAvatar } from "../api/users.js";
 import { checkUsernameAvailability } from "../api/users.js";
+import { initNav } from "../components/nav.js";
 
 import {
   showToast,
@@ -16,16 +18,11 @@ import {
   validatePassword
 } from "../utils/validators.js";
 
-await requireAuth();
-
 // --------------------
 // AUTH + USER
 // --------------------
-const user = getUser();
-
-if (!user) {
-  window.location.replace("login.html");
-}
+initNav();
+const user = await requireAuth();
 
 // --------------------
 // STATE
@@ -65,6 +62,26 @@ async function loadRestaurants() {
 }
 
 loadRestaurants();
+
+const searchInput = document.getElementById("restaurant-search");
+
+let searchTimer;
+
+if (searchInput) {
+  searchInput.addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(() => {
+      const query = e.target.value.toLowerCase().trim();
+
+      const filtered = allRestaurants.filter((r) =>
+        r.name.toLowerCase().includes(query)
+      );
+
+      renderRestaurants(filtered, query);
+    }, 150);
+  });
+}
 
 function renderRestaurants(restaurants, searchQuery = "") {
   const container = document.getElementById("favorite-container");
@@ -203,6 +220,22 @@ if (form) {
       hasError = true;
     }
 
+    if (password !== "") {
+        // user typed something
+      
+        if (password.trim() === "") {
+          showFieldError("password", "Password cannot be empty or spaces");
+          hasError = true;
+        } else {
+          const passwordError = validatePassword(password);
+          if (passwordError) {
+            showFieldError("password", passwordError);
+            hasError = true;
+          }
+        }
+    }
+
+    /*
     if (password.trim() !== "") {
       const passwordError = validatePassword(password);
       if (passwordError) {
@@ -210,9 +243,9 @@ if (form) {
         hasError = true;
       }
     }
+      */
 
     if (hasError) return;
-
     // --------------------
     // AVATAR
     // --------------------
@@ -222,6 +255,8 @@ if (form) {
       const res = await uploadAvatar(selectedFile);
       avatarFilename = res.data.avatar;
     }
+
+    console.log("Edit's password: ", password);
 
     // --------------------
     // PAYLOAD
@@ -238,9 +273,10 @@ if (form) {
       }
 
     if (password.trim() !== "") {
-      updatedUserData.password = password;
+        updatedUserData.password = password;
     }
 
+      
     // --------------------
     // API CALL
     // --------------------
@@ -261,8 +297,14 @@ if (form) {
       }, 500);
 
     } catch (err) {
-      console.error("Update failed", err);
-      showToast("Could not update profile", "error");
-    }
+        console.error("Update failed", err);
+        const fallbackFields = ["username", "password"];
+
+        fallbackFields.forEach((id) => {
+            showFieldError(id, null);
+        });
+
+        showFieldError(fallbackFields.pop(), "Something went wrong. Try again. ")
+      }
   });
 }

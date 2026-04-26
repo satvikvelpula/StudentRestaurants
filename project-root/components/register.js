@@ -1,8 +1,10 @@
 import { register } from "../api/auth.js";
 import { checkUsernameAvailability } from "../api/users.js";
-import { redirectIfAuthenticated } from "../api/auth.js";
+import { requireGuest } from "../utils/requireGuest.js";
+import { initNav } from "../components/nav.js";
 
-redirectIfAuthenticated();
+initNav();
+requireGuest();
 
 import {
   showToast,
@@ -13,7 +15,8 @@ import {
 
 import {
   validateUsername,
-  validatePassword
+  validatePassword,
+  validateEmail
 } from "../utils/validators.js";
 
 let usernameTimer;
@@ -85,6 +88,12 @@ if (form) {
       hasError = true;
     }
 
+    const emailError = validateEmail(email);
+    if (emailError) {
+        showFieldError("email", emailError);
+        hasError = true;
+    }
+
     const passwordError = validatePassword(password);
     if (passwordError) {
       showFieldError("password", passwordError);
@@ -111,7 +120,7 @@ if (form) {
       }
     } catch (err) {
       console.error("Username check failed", err);
-      showToast("Could not validate username. Try again.", "error");
+      showFieldError("username", "Could not validate username.");
       return;
     }
 
@@ -119,6 +128,8 @@ if (form) {
     // --------------------
     // REGISTER USER
     // --------------------
+
+    console.log("Register password: ", password);
     try {
       await register(username, email, password);
 
@@ -126,8 +137,26 @@ if (form) {
       window.location.href = "login.html";
 
     } catch (err) {
-      console.error("Registration failed", err);
-      showToast("Registration failed", "error");
-    }
+        console.error("Registration failed", err);
+      
+        // Example: backend might send message
+        if (err.message?.includes("username")) {
+          showFieldError("username", "Username already exists");
+          return;
+        }
+      
+        if (err.message?.includes("email")) {
+          showFieldError("email", "Email already in use");
+          return;
+        }
+        const fallbackFields = ["username", "email", "password", "confirm-password"];
+
+        fallbackFields.forEach((id) => {
+            showFieldError(id, null);
+        });
+
+        showFieldError(fallbackFields.pop(), "Something went wrong. Try again. ")
+
+      }
   });
 }

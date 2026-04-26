@@ -11,6 +11,8 @@
 
 <body>
 
+  <div id="nav-root"></div>
+
     <div class="auth-container">
         <div class="auth-card dashboard-card">
           <h2 class="auth-title">Your Dashboard</h2>
@@ -21,6 +23,7 @@
             <div class="profile-info">
               <h3 id="user-name">Loading...</h3>
               <p id="user-email">Loading...</p>
+              <p>Your Location: <strong id="user-location">Detecting...</strong></p>
               <p>Favorite Restaurant: <strong id = "user-favorite">Loading...</strong></p>
             </div>
           </div>
@@ -29,6 +32,20 @@
             <button class="action-btn" id="edit-profile-btn">Edit Profile</button>
             <button class="action-btn logout-btn" id="logout-btn">Logout</button>
             <button class="action-btn delete-btn" id="delete-account-btn">Delete Account</button>
+          </div>
+
+          <div id="delete-confirmation" class="delete-confirmation">
+            <p class="delete-warning">
+              Type <strong>DELETE</strong> to confirm.
+            </p>
+
+            <input id="delete-confirm-input" placeholder="DELETE" />
+            <p id="delete-error" class="input-error"></p>
+
+            <div class="delete-actions">
+              <button id="cancel-delete" class="action-btn">Cancel</button>
+              <button id="confirm-delete" disabled class="danger">Delete</button>
+            </div>
           </div>
       
           <!-- Favorite Restaurants Grid -->
@@ -41,7 +58,7 @@
           </div>
       
           <div class="auth-footer">
-            <a>Back to Home</a>
+            <a href = "home.html">Back to Home</a>
           </div>
         </div>
       </div>

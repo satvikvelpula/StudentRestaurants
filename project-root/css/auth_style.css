@@ -160,18 +160,31 @@
   cursor: pointer;
   font-size: 0.9rem;
   color: var(--text);
-  transition: background 0.15s ease, border 0.15s ease;
+
+  background: transparent;
+  border-left: 3px solid transparent;
+  font-weight: 400;
+
+  transform: translateX(0);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    padding-left 0.2s ease,
+    font-weight 0.2s ease,
+    transform 0.15s ease;
 }
 
 .restaurant-slot:hover {
   background: var(--hover);
+  transform: translateX(2px);
 }
 
 
 .restaurant-slot.active {
   background: #eef2f7;
-  border-left: 3px solid #4f46e5;
+  border-left-color: #4f46e5;
   padding-left: 9px;
+  transform: translateX(2px);
   font-weight: 500;
 }
 
@@ -269,19 +282,81 @@
 }
 
 .action-btn {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background: #1f2933; /* matches auth-button */
-  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+              background 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02);
 }
 
 .action-btn:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+}
+
+.action-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.action-btn.primary {
+  background: #1f2933;
+  color: white;
+  border: none;
+}
+
+.action-btn.primary:hover {
   background: #111827;
+}
+
+.action-btn.logout-btn {
+  background: #ef4444;
+  border: none;
+  color: white;
+}
+
+.action-btn.logout-btn:hover {
+  background: #dc2626;
+}
+
+.action-btn.logout-btn,
+.action-btn.delete-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn.logout-btn::after,
+.action-btn.delete-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.08);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.action-btn.logout-btn:hover::after,
+.action-btn.delete-btn:hover::after {
+  opacity: 1;
+}
+
+.action-btn.delete-btn {
+  background: #7f1d1d;
+  border: none;
+  color: white;
+}
+
+.action-btn.delete-btn:hover {
+  background: #991b1b;
 }
 
 .logout-btn {
@@ -292,13 +367,110 @@
   background: #b91c1c;
 }
 
-.delete-btn {
-  background: #7f1d1d;
+.delete-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
 }
 
-.delete-btn:hover {
-  background: #991b1b;
+.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
 }
+
+.delete-confirmation {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid #dc2626;
+  border-radius: 12px;
+  background: var(--card);
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-6px);
+
+  transition: all 0.2s ease;
+}
+
+.delete-confirmation.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+
+
+.delete-confirmation input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #fecaca;
+  background: white;
+  font-size: 14px;
+
+  transition: all 0.2s ease, transform 0.15s ease;
+}
+
+.delete-confirmation input:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+.delete-warning {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #b91c1c;
+}
+
+.delete-actions .action-btn {
+  background: #f3f4f6;
+  border: 1px solid var(--border);
+  color: #111827;
+}
+
+.delete-actions .action-btn:hover {
+  background: #e5e7eb;
+}
+
+.danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.danger:hover {
+  background: #b91c1c;
+}
+
+.danger:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+button {
+  letter-spacing: 0.2px;
+}
+
+.delete-confirmation p {
+  margin: 0;
+}
+
 
 
 .search-input {

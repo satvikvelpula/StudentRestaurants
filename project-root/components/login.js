@@ -1,7 +1,9 @@
 import { login } from "../api/auth.js";
-import { redirectIfAuthenticated } from "../api/auth.js";
+import { requireGuest } from "../utils/requireGuest.js";
+import { initNav } from "../components/nav.js";
 
-redirectIfAuthenticated();
+initNav();
+requireGuest();
 
 import {
     showToast,
@@ -40,7 +42,8 @@ if (form) {
           showToast("Login successful", "success");
           window.location.href = "home.html";
         } catch (err) {
-          showToast("Invalid credentials", "error");
+            showFieldError("username", null)
+            showFieldError("Atomize", "Invalid username or password");
           console.error(err);
         }
       });

@@ -9,8 +9,11 @@ import { userIcon, greenIcon, favouriteIcon } from "../components/icons.js";
 import { extractFilterOptions, populateFilters, setupFilterEvents } from "../components/filters.js";
 import { filterRestaurants } from "../components/restaurantFilters.js";
 import { updateUI, fadeOutMarker } from "../components/updateUI.js";
+import { initNav } from "../components/nav.js";
 
-function getPosition() {
+initNav();
+
+export function getPosition() {
     return new Promise((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(resolve, reject);
     });
@@ -199,6 +202,21 @@ function renderRestaurantList(restaurants, map, nearest, searchQuery = "") {
     const modal = document.getElementById("modal");
 
 
+    function renderMenuError(message = "Failed to load menu", type = "daily") {
+    const container = document.getElementById("menu-content");
+
+    container.innerHTML = `
+        <div class="menu-error">
+        <p>${message}</p>
+        </div>
+    `;
+
+    document.getElementById("retry-menu").addEventListener("click", () => {
+        loadMenu(currentRestaurantId, type);
+    });
+    }
+
+
   async function loadMenu(restaurantId, type = "daily") {
     const cacheKey = `${restaurantId}-${type}`;
   
@@ -224,8 +242,8 @@ function renderRestaurantList(restaurants, map, nearest, searchQuery = "") {
   
     } catch (err) {
       console.error("Menu error:", err);
-      showToast("Failed to load menu", "error");
-      renderMenu([], type);
+      renderMenuError("Could not load menu. Try again.", type);
+      // renderMenu([], type);
     }
   }
   
@@ -284,6 +302,8 @@ function renderRestaurantList(restaurants, map, nearest, searchQuery = "") {
 
   function openMenuModal(restaurant, nearest) {
     currentRestaurantId = restaurant._id;
+    
+    if (!currentRestaurantId) return;
   
     renderRestaurantProfile(restaurant, nearest);
   

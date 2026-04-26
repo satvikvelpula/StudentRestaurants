@@ -55,7 +55,6 @@ export async function register(username, email, password) {
 export function logout() {
     sessionStorage.removeItem("token");
     localStorage.removeItem("user");
-  
     window.location.replace("login.html");
   }
   
@@ -65,12 +64,41 @@ export function clearAuthState() {
 }
 
 // --------------------
+// GET TOKEN
+// --------------------
+
+export function getToken() {
+    // return localStorage.getItem("token");
+    return sessionStorage.getItem("token");
+  }
+
+
+
+// --------------------
+// GET USER
+// --------------------
+export function getUser() {
+    try {
+      const data = localStorage.getItem("user");
+  
+      if (!data || data === "undefined") return null;
+  
+      return JSON.parse(data);
+    } catch (err) {
+      console.error("Failed to parse user:", err);
+      return null;
+    }
+  }
+
+// --------------------
 // CHECK LOGIN
 // --------------------
 export function isLoggedIn() {
   // return !!localStorage.getItem("token");
   return !!sessionStorage.getItem("token");
 }
+
+/*
 
 export async function requireAuth() {
     const token = getToken();
@@ -90,44 +118,29 @@ export async function requireAuth() {
       localStorage.setItem("user", JSON.stringify(user));
       return true;
     } catch (err) {
+
       console.error("Auth check failed", err);
-  
-      sessionStorage.removeItem("token");
-      localStorage.removeItem("user");
-  
-      window.location.replace = "login.html";
-      return false;
+
+      const status = err?.status || err?.response?.status;
+
+
+    if (status === 401) {
+        sessionStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.replace("login.html");
+    } else {
+        // network / server issue → DON'T log out
+        console.warn("Auth check failed, but keeping session");
+        return true;
+        }
     }
-  }
+}
 
 export function redirectIfAuthenticated() {
     if (isLoggedIn()) {
     window.location.replace("dashboard.html");
     }
 }
+*/
 
-// --------------------
-// GET USER
-// --------------------
-export function getUser() {
-    try {
-      const data = localStorage.getItem("user");
-  
-      if (!data || data === "undefined") return null;
-  
-      return JSON.parse(data);
-    } catch (err) {
-      console.error("Failed to parse user:", err);
-      return null;
-    }
-  }
-
-// --------------------
-// GET TOKEN
-// --------------------
-
-export function getToken() {
-    // return localStorage.getItem("token");
-    return sessionStorage.getItem("token");
-  }
   
