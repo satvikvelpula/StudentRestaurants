@@ -1,283 +1,116 @@
 import { getRestaurants } from "../api/restaurants.js";
 import { enrichRestaurants, getNearest } from "../utils/map_model.js";
-import { createMap, addUserMarker, addRestaurantMarker, hideCustomPopup, handleUserMarkerClick } from "./mapView.js";
+import { createMap, addUserMarker, addRestaurantMarker, hideCustomPopup, handleUserMarkerClick, setUserLocation, getGoogleMapsDirectionsUrl, getUserLocation } from "./mapView.js";
 import { getUser } from "../api/auth.js";
 import { getDailyMenu, getWeeklyMenu } from "../api/menus.js";
 import { parseCourses, parseWeeklyCourses } from "../utils/menu_model.js";
+import { showToast } from "../utils/notifications.js"; 
+import { userIcon, greenIcon, favouriteIcon } from "../components/icons.js";
+import { extractFilterOptions, populateFilters, setupFilterEvents } from "../components/filters.js";
+import { filterRestaurants } from "../components/restaurantFilters.js";
+import { updateUI, fadeOutMarker } from "../components/updateUI.js";
 
-export async function initMap() {
-  const restaurants = await getRestaurants();
+function getPosition() {
+    return new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+}
 
-  function getTestLocation(realCoords) {
-    const TEST_MODE = true;
+async function bootstrapApp() {
+    try {
+      const position = await getPosition();
   
-    if (!TEST_MODE) return realCoords;
-
-    return {
-      latitude: 60.1699,
-      longitude: 24.9384
-    };
+      startApp(position.coords.latitude, position.coords.longitude);
+  
+    } catch (err) {
+      console.warn("Geolocation failed, using fallback");
+  
+      showToast("Using default location (Helsinki)", "error");
+  
+      startApp(60.1699, 24.9384);
+    }
   }
 
-  navigator.geolocation.getCurrentPosition((pos) => {
-    // const coords = getTestLocation(pos.coords)
-    const { latitude, longitude } = pos.coords;
+function startApp(lat, lng) {
+    setUserLocation(lat, lng);
 
-    const map = createMap(latitude, longitude);
+    const map = createMap(lat, lng);
+
+    initMap(lat, lng, map);
+}
+  
+
+export async function initMap(latitude, longitude, map) {
+  let restaurants = [];
+  try {
+    restaurants = await getRestaurants();
+    } catch (err) {
+        console.error("Failed to fetch restaurants:", err);
+        showToast("Could not load restaurants", "error");
+        return;
+    }
+
+    const state = {
+        restaurantMarkers: [],
+        isUpdating: false
+        };
+
+    const deps = {
+        getUser,
+        getNearest,
+        getRestaurantIcon,
+        addRestaurantMarker,
+        renderRestaurantList,
+        fadeOutMarker,
+        showToast,
+        icons: {
+            favourite: favouriteIcon,
+            nearest: greenIcon
+        },
+        onRestaurantClick: (restaurant, latlng, nearest) => {
+            openRestaurant(restaurant, latlng, map, nearest);
+        }
+        };
+        
 
     const enriched = enrichRestaurants(restaurants, latitude, longitude);
 
-    // const nearest = getNearest(enriched); Already defined in initMap.js
-
-
-    // From here starting - populating filter sets:
-    function extractFilterOptions(restaurants) {
-        const cities = new Set();
-        const companies = new Set();
-      
-        restaurants.forEach(r => {
-          if (r.city) cities.add(r.city);
-          if (r.company) companies.add(r.company);
-        });
-      
-        return {
-          cities: Array.from(cities).sort(),
-          companies: Array.from(companies).sort()
-        };
-      }
-    
     const filterSets = extractFilterOptions(enriched);
-    console.log(filterSets.cities);
-    console.log(filterSets.companies); 
-
-
-    function populateFilters(cities, companies) {
-        const citySelect = document.getElementById("city-filter");
-        const companySelect = document.getElementById("company-filter");
-      
-        cities.forEach(city => {
-          const option = document.createElement("option");
-          option.value = city;
-          option.textContent = city;
-          citySelect.appendChild(option);
-        });
-      
-        companies.forEach(company => {
-          const option = document.createElement("option");
-          option.value = company;
-          option.textContent = company;
-          companySelect.appendChild(option);
-        });
-      }
-
     populateFilters(filterSets.cities, filterSets.companies);
 
-    // Populating filter sets done
+    const allRestaurants = enriched;
 
-    let allRestaurants = enriched;
-    let restaurantMarkers = [];
-    let isUpdating = false;
-
-    async function updateUI(filteredRestaurants) {
-        if (isUpdating) return;
-        isUpdating = true; 
-
-        try {
-
-            const user = getUser();
-
-            await Promise.all(
-                restaurantMarkers.map(m => fadeOutMarker(m))
-            );
-
-            restaurantMarkers.forEach(m => {
-                if (m && map.hasLayer(m)) {
-                    map.removeLayer(m);
-                }
-            });
-
-            restaurantMarkers = [];
-
-            if (!filteredRestaurants.length) {
-                renderRestaurantList([], map, null);
-                return;
-            }
-
-            const nearest = getNearest(filteredRestaurants);
-        
-            filteredRestaurants.forEach(r => {
-            const icon = getRestaurantIcon(r, user, nearest, {
-                favourite: favouriteIcon,
-                nearest: greenIcon
-            });
-        
-            const marker = addRestaurantMarker(
-                map,
-                r,
-                icon,
-                (restaurant, latlng) => {
-                openRestaurant(restaurant, latlng, map, nearest);
-                },
-                user,
-                nearest
-            );
-
-            if (marker?._icon) {
-                marker._icon.classList.add("marker-fade-in");
-              }              
-        
-            if (marker) {
-                restaurantMarkers.push(marker);
-            }
-            }); 
-            renderRestaurantList(filteredRestaurants, map, nearest);
-        } catch {
-            console.error("updateUI failed: ", err)
-        } finally {
-            isUpdating = false;
-        }
-    
-      }
-    
-      
-      function fadeOutMarker(marker) {
-        return new Promise(resolve => {
-          if (!marker?._icon) return resolve();
-      
-          const el = marker._icon;
-          el.style.transition = "opacity 150ms ease";
-          el.style.opacity = "0";
-      
-          setTimeout(resolve, 150);
-        });
-      }      
-      
-
-    function filterRestaurants(allRestaurants, filters) { // filters is filter input box values (citySelect.value, companySelect.value)
-        if (!Array.isArray(allRestaurants)) return [];
-        return allRestaurants.filter(r => {
-            if (!r) return false;
-            const matchCity =
-                !filters.city || r.city === filters.city;
-        
-            const matchCompany =
-                !filters.company || r.company === filters.company;
-        
-            return matchCity && matchCompany;
-        });
-      }
-
-    function setupFilterEvents() {
-        const citySelect = document.getElementById("city-filter");
-        const companySelect = document.getElementById("company-filter");
-
-        function applyFilters() {
-            const filters = {
-            city: citySelect.value,
-            company: companySelect.value
-            };
-
-            const filtered = filterRestaurants(allRestaurants, filters);
-            console.log(filtered);
-            updateUI(filtered); 
-        }
-
-        citySelect.addEventListener("change", applyFilters);
-        companySelect.addEventListener("change", applyFilters);
-    }
-
-    setupFilterEvents();
-
-    const userIcon = L.icon({
-        iconUrl: 'https://grassroots.tools/static/scripts/leaflet/images/marker-icon-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      }); 
-
-    // NEAREST MARKER
-    const greenIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-green.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
-      });
-
-
-    const favouriteIcon = L.icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-yellow.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41]
+    setupFilterEvents({
+        allRestaurants,
+        map,
+        state,
+        deps,
+        filterRestaurants,
+        updateUI
     });
-      
 
     addUserMarker(map, latitude, longitude, userIcon, (latlng) => {
         handleUserMarkerClick(map, latlng);
-      });
+    });
 
     map.on("click", () => {
         hideCustomPopup();
     });
 
-    updateUI(allRestaurants);
-    
-
-    /*
-
-    const user = getUser();
-    const icons = {
-        favourite: favouriteIcon,
-        nearest: greenIcon
-      };
-
-      
-
-    enriched.forEach((r) => {
-        const icon = getRestaurantIcon(r, user, nearest, icons);
-
-        addRestaurantMarker(
-            map,
-            r,
-            icon,
-            (restaurant, latlng) => {
-                openRestaurant(restaurant, latlng, map, nearest);
-            },
-            user,
-            nearest
-          );
-      });
-
-      map.on("click", () => {
-        hideCustomPopup();
-      });
-
-      renderRestaurantList(enriched, map, nearest);
-
-      */
-      
-      
-  });
+    updateUI({
+        filteredRestaurants: enriched,
+        searchQuery: "",
+        map,
+        state,
+        deps
+    });
 
 }
 
-initMap();
+bootstrapApp()
 
 async function openRestaurant(restaurant, latlng, map, nearest) {
-
-    // const isNearest = restaurant._id === nearest?._id;
-    // const isFavourite = restaurant._id === user?.favouriteRestaurant;
-
-    // openCustomPopup(map, restaurant, latlng, isNearest, isFavourite);
-
     map.flyTo(latlng, 15, { duration: 0.6 });
-
     openMenuModal(restaurant, nearest);
 }
 
@@ -290,7 +123,7 @@ function getRestaurantIcon(r, user, nearest, icons) {
     return undefined;
 }
 
-function renderRestaurantList(restaurants, map, nearest) {
+function renderRestaurantList(restaurants, map, nearest, searchQuery = "") {
     const container = document.querySelector(".restaurant-list");
   
     container.innerHTML = `
@@ -300,15 +133,45 @@ function renderRestaurantList(restaurants, map, nearest) {
   
   const scrollContainer = container.querySelector(".restaurant-list-scroll");
   
+  if (!restaurants.length) {
+    const empty = document.createElement("div");
+    empty.className = "restaurant-card";
+
+    empty.innerHTML = `
+      <p>
+        Restaurant "${searchQuery}" not found
+      </p>
+    `;
+
+    scrollContainer.appendChild(empty);
+    return;
+  }
   
     restaurants.forEach((r) => {
       const card = document.createElement("div");
+
+      const user = getUser();
+      const isFavourite = r._id === user?.favouriteRestaurant;
+      const isNearest = r._id === nearest?._id;
+
+      let badge = "";
+      if (isFavourite) {
+        badge = `<span class="badge fav">★</span>`;
+        card.classList.add("favourite");
+      } else if (isNearest) {
+        badge = `<span class="badge near">●</span>`;
+        card.classList.add("nearest");
+      }
+
       card.className = "restaurant-card";
-  
       card.innerHTML = `
+      <div class="card-header">
         <h3>${r.name}</h3>
-        <p>${r.address || "No address"}</p>
-      `;
+        ${badge}
+      </div>
+      <p>${r.address || "No address"}</p>
+      <p class="card-company">${r.company || "Unknown"}</p>
+    `;
   
       card.addEventListener("click", () => {
         const [lng, lat] = r.location.coordinates;
@@ -350,7 +213,6 @@ function renderRestaurantList(restaurants, map, nearest) {
       } else {
         data = await getWeeklyMenu(restaurantId);
         data = parseWeeklyCourses(data);
-        console.log(data, "parseWeeklyCourses(data) function check");
       }
   
       menuCache.set(cacheKey, data);
@@ -359,6 +221,7 @@ function renderRestaurantList(restaurants, map, nearest) {
   
     } catch (err) {
       console.error("Menu error:", err);
+      showToast("Failed to load menu", "error");
       renderMenu([], type);
     }
   }
@@ -372,7 +235,6 @@ function renderRestaurantList(restaurants, map, nearest) {
     }
   
     if (type === "daily") {
-        console.log(data, "Daily data check");
       container.innerHTML = data.map(item => `
         <div class="menu-item">
           <strong>${item.name}</strong><br>
@@ -419,9 +281,7 @@ function renderRestaurantList(restaurants, map, nearest) {
 
   function openMenuModal(restaurant, nearest) {
     currentRestaurantId = restaurant._id;
-    console.log(currentRestaurantId);
   
-    // document.getElementById("modal-title").textContent = restaurant.name;
     renderRestaurantProfile(restaurant, nearest);
   
     modal.classList.remove("hidden");
@@ -449,13 +309,23 @@ function renderRestaurantList(restaurants, map, nearest) {
         modal.classList.add("hidden");
     });
     }
-
-
+      
 function renderRestaurantProfile(restaurant, nearest) {
 
     const user = getUser();
+    const userLocation = getUserLocation();
+    if (!userLocation) {
+        showToast("Location not available", "error");
+        return;
+      }
     const isFavourite = restaurant._id === user?.favouriteRestaurant;
     const isNearest = restaurant._id === nearest?._id;
+
+    const [lng, lat] = restaurant.location.coordinates;
+
+    const drivingUrl = getGoogleMapsDirectionsUrl(userLocation, { lat, lng }, "driving");
+    const walkingUrl = getGoogleMapsDirectionsUrl(userLocation, { lat, lng }, "walking");
+    const transitUrl = getGoogleMapsDirectionsUrl(userLocation, { lat, lng }, "transit");
 
     const container = document.getElementById("restaurant-profile");
 
@@ -503,6 +373,20 @@ function renderRestaurantProfile(restaurant, nearest) {
       <p class="profile-distance">
         📍 ${distance} away
       </p>
+
+        <div class="nav-row">
+        <a href="${drivingUrl}" target="_blank" class="navigate-btn">
+            🚗 Navigate
+        </a>
+
+        <a href="${walkingUrl}" target="_blank" class="nav-icon">
+            🚶 
+        </a>
+
+        <a href="${transitUrl}" target="_blank" class="nav-icon">
+            🚌
+        </a>
+        </div>
 
     </div>
   `;

@@ -1,3 +1,25 @@
+// Store latest user location (shared)
+let userLocation = null;
+
+export function setUserLocation(lat, lng) {
+  userLocation = { lat, lng };
+}
+
+export function getUserLocation() {
+  return userLocation;
+}
+
+// Build Google Maps directions URL
+export function getGoogleMapsDirectionsUrl(origin, destination, mode = "driving") {
+  if (!origin || !destination) return "#";
+
+  return `https://www.google.com/maps/dir/?api=1` +
+    `&origin=${origin.lat},${origin.lng}` +
+    `&destination=${destination.lat},${destination.lng}` +
+    `&travelmode=${mode}`;
+}
+
+
 export function createMap(lat, lng) {
 
     const finlandBounds = L.latLngBounds(

@@ -109,6 +109,27 @@
   .restaurant-list-scroll::-webkit-scrollbar-track {
     background: transparent;
   }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-company {
+    font-size: 0.75rem;
+    color: var(--subtext);
+  }
+
+  .restaurant-card.favourite {
+    background: #fefce8;
+    border-left: 3px solid #eab308;
+  }
+
+  .restaurant-card.nearest {
+    background: #f0fdf4;
+    border-left: 3px solid #16a34a;
+  }
   
 
   .restaurant-card {
@@ -370,13 +391,47 @@
   
   /* Modal */
   .modal {
-    display: flex; /* later toggle with JS */
     position: fixed;
     inset: 0;
     z-index: 9999;
     background: rgba(0,0,0,0.6);
+  
+    display: flex;
     align-items: center;
     justify-content: center;
+  
+    overflow: hidden;
+  }
+
+  .modal {
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+
+  .modal:not(.hidden) {
+    opacity: 1;
+  }
+  
+  .modal-box {
+    transform: scale(0.96);
+    transition: transform 180ms ease;
+  }
+  
+  .modal:not(.hidden) .modal-box {
+    transform: scale(1);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 6px;
+  }
+  
+  .close-btn {
+    border: none;
+    background: none;
+    font-size: 22px;
+    cursor: pointer;
   }
 
   .hidden {
@@ -385,26 +440,22 @@
 
   .modal-box {
     background: white;
-    padding: 20px;
     border-radius: 12px;
   
-    width: 90%;
-    max-width: 420px;
+    width: min(420px, calc(100vw - 40px));
+    max-height: min(720px, calc(100vh - 40px));
   
-    max-height: 80vh;   /* KEY FIX */
     display: flex;
     flex-direction: column;
-  }
   
-  .close-btn {
-    position: absolute;
-    right: 20px;
-    top: 10px;
-    border: none;
-    background: none;
-    font-size: 24px;
-    cursor: pointer;
-  }
+    position: relative;
+    min-height: 0;
+  
+    padding: 20px;
+
+    overflow: hidden;
+  }  
+  
 
   .menu-tabs {
     display: flex;
@@ -431,6 +482,7 @@
     overflow-y: auto;
     flex: 1;
     padding-right: 6px;
+    min-height: 0;
   }
 
   #menu-content {
@@ -459,6 +511,10 @@
     border-radius: 12px;
     border: 1px solid var(--border);
     background: var(--card);
+
+    max-height: 140px;
+    overflow: hidden;
+    overflow-y: auto;
   }
 
   .profile-header {
@@ -537,6 +593,86 @@
     transition: all 0.2s ease;
   }
 
+  
+  .navigate-group {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .nav-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  
+  /* Primary button */
+  .navigate-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  
+    padding: 10px 14px;
+    background: #2c7be5;
+    color: white;
+  
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+  
+    transition: all 0.15s ease;
+  }
+  
+  .navigate-btn:hover {
+    background: #1a5edb;
+    transform: translateY(-1px);
+  }
+  
+  /* Secondary icons */
+  .nav-icon {
+    width: 36px;
+    height: 36px;
+  
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  
+    border-radius: 50%;
+    background: #eef2f7;
+    color: #374151;
+  
+    text-decoration: none;
+    font-size: 16px;
+  
+    transition: all 0.15s ease;
+  }
+  
+  .nav-icon:hover {
+    background: #e5e7eb;
+    transform: scale(1.08);
+  }
+
+  .nav-icon:active,
+.navigate-btn:active {
+  transform: scale(0.96);
+}
+
+.nav-icon:nth-child(2) {
+  background: #ecfeff;
+  color: #0891b2; /* walking */
+}
+
+.nav-icon:nth-child(3) {
+  background: #fef3c7;
+  color: #b45309; /* transit */
+}
+  
+
+  
   .leaflet-tooltip {
     background: transparent !important;
     border: none !important;
@@ -548,10 +684,8 @@
     text-align: center;
     line-height: 1.3;
   }
-  
-  
-  
-  
+
+
   /* Responsive */
   @media (max-width: 768px) {
     .content {

@@ -50,10 +50,21 @@ async function loadRestaurants() {
 
 loadRestaurants();
 
-function renderRestaurants(restaurants) {
+function renderRestaurants(restaurants, searchQuery = "") {
     const container = document.getElementById("favorite-container");
   
     container.innerHTML = ""; // clear previous list
+
+
+    if (!restaurants.length) {
+        const empty = document.createElement("div");
+        empty.className = "restaurant-slot empty";
+    
+        empty.textContent = `Restaurant "${searchQuery}" not found`;
+    
+        container.appendChild(empty);
+        return;
+      }
   
     restaurants.forEach((restaurant) => {
       const slot = document.createElement("div");
@@ -67,33 +78,42 @@ function renderRestaurants(restaurants) {
       slot.addEventListener("click", () => {
         document.querySelectorAll(".restaurant-slot.favorite").forEach(el => el.classList.remove("active"));
         slot.classList.add("active");
-        console.log(selectedRestaurantId)
-        console.log(restaurant._id)
         selectedRestaurantId = restaurant._id;
       });
-  
       container.appendChild(slot);
     });
 }
 
+function filterRestaurants(restaurants, searchQuery) {
+    if (!searchQuery) return restaurants;
+  
+    return restaurants.filter(r =>
+      r.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }  
+
 const searchInput = document.getElementById("restaurant-search");
 
 if (searchInput) {
-  searchInput.addEventListener("input", (e) => {
-    const value = e.target.value.toLowerCase();
-
-    const filtered = allRestaurants.filter((restaurant) =>
-      restaurant.name.toLowerCase().includes(value)
-    );
-
-    renderRestaurants(filtered);
-  });
-}
+    let debounceTimer;
+  
+    searchInput.addEventListener("input", (e) => {
+      clearTimeout(debounceTimer);
+  
+      debounceTimer = setTimeout(() => {
+        const value = e.target.value.trim();
+  
+        const filtered = filterRestaurants(allRestaurants, value);
+  
+        renderRestaurants(filtered, value);
+      }, 200);
+    });
+  }
 
 const form = document.querySelector(".auth-form");
 
 if (form) {
-    enableAutoErrorClear("auth-form"); // ⚠️ make sure form has this ID
+    enableAutoErrorClear("auth-form"); // make sure form has this ID
   }
 
 const fileInput = document.getElementById("profilePic");

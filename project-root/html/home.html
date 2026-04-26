@@ -21,7 +21,7 @@
 
     <!-- Filters -->
     <section class="filters">
-      <input type="text" placeholder="Search restaurant...">
+      <input id="restaurant-search" type="text" placeholder="Search restaurant...">
       <select id="city-filter">
         <option value="">All Cities</option>
       </select>
@@ -67,9 +67,9 @@
   <div id="modal" class="modal hidden">
     <div class="modal-box">
       
-      <button class="close-btn" id="modal-close">×</button>
-  
-      <!-- <h2 id="modal-title">Restaurant</h2> -->
+      <div class="modal-header">
+        <button class="close-btn" id="modal-close">×</button>
+      </div>
 
       <div id="restaurant-profile"></div>
   
