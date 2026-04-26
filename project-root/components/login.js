@@ -1,14 +1,14 @@
 import { login } from "../api/auth.js";
+import { redirectIfAuthenticated } from "../api/auth.js";
+
+redirectIfAuthenticated();
 
 import {
-  showToast,
-  showFieldError,
-  enableAutoErrorClear
+    showToast,
+    showFieldError,
+    enableAutoErrorClear
 } from "../utils/notifications.js";
 
-
-
-/*redirectIfLoggedIn();*/
 
 const form = document.getElementById("login-form");
 
@@ -17,7 +17,6 @@ if (form) {
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
       
-        // const email = document.getElementById("email").value;
         const username = document.getElementById("username").value;
         const password = document.getElementById("Atomize").value;
 
@@ -25,11 +24,12 @@ if (form) {
 
         if (!username) {
             showFieldError("username", "Please enter your username");
+            
             hasError = true;
         }
 
         if (!password) {
-            showFieldError("password", "Please enter your password");
+            showFieldError("Atomize", "Please enter your password");
             hasError = true;
           }
           

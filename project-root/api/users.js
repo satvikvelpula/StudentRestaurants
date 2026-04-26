@@ -10,6 +10,10 @@ export async function fetchCurrentUser() {
   });
 }
 
+export async function checkUsernameAvailability(username) {
+    return await fetchData(`/users/available/${username}`);
+  }  
+
 export async function updateUser(data) {
     return await fetchData("/users", {
         method: "PUT",
@@ -19,6 +23,15 @@ export async function updateUser(data) {
         body: JSON.stringify(data),
       })
 }
+
+export async function deleteUser() {
+    return await fetchData("/users", {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    });
+  }  
 
 export async function uploadAvatar(net) {
     const formData = new FormData();

@@ -1,4 +1,5 @@
 import { fetchData } from '../utils/fetchData.js';
+import { fetchCurrentUser } from "./users.js";
 
 // --------------------
 // LOGIN
@@ -12,12 +13,17 @@ export async function login(username, password) {
     }),
   });
 
-  localStorage.clear();
-  // Save token + user
-  localStorage.setItem("token", response.token);
-  localStorage.setItem("user", JSON.stringify(response.data));
+    // clear old state safely
+    sessionStorage.removeItem("token");
+    localStorage.removeItem("user");
 
-  console.log("Logged in user:", response.data);
+      // set new state
+    sessionStorage.setItem("token", response.token);
+    if (response.data) {
+        localStorage.setItem("user", JSON.stringify(response.data));
+      }
+
+    console.log("Logged in user:", response.data);
 
   return response;
 }
@@ -47,51 +53,81 @@ export async function register(username, email, password) {
 // LOGOUT
 // --------------------
 export function logout() {
-    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
     localStorage.removeItem("user");
   
-    // optional cleanup
-    sessionStorage.clear();
-  
-    window.location.href = "login.html";
+    window.location.replace("login.html");
   }
   
+export function clearAuthState() {
+    sessionStorage.removeItem("token");
+    localStorage.removeItem("user");
+}
 
 // --------------------
 // CHECK LOGIN
 // --------------------
 export function isLoggedIn() {
-  return !!localStorage.getItem("token");
+  // return !!localStorage.getItem("token");
+  return !!sessionStorage.getItem("token");
 }
 
-export function requireAuth() {
-    if (!isLoggedIn()) {
-      window.location.href = "login.html";
+export async function requireAuth() {
+    const token = getToken();
+  
+    if (!token) {
+      window.location.replace("login.html");
+      return false;
+    }
+  
+    try {
+      const res = await fetchCurrentUser();
+      // fetch safe
+      const user = res.data || res.user || res;
+      if (!user) throw new Error("No user returned");
+  
+      // sync fresh user
+      localStorage.setItem("user", JSON.stringify(user));
+      return true;
+    } catch (err) {
+      console.error("Auth check failed", err);
+  
+      sessionStorage.removeItem("token");
+      localStorage.removeItem("user");
+  
+      window.location.replace = "login.html";
+      return false;
     }
   }
 
-/*
-
-export function redirectIfLoggedIn() {
+export function redirectIfAuthenticated() {
     if (isLoggedIn()) {
-      window.location.href = "home.html";
+    window.location.replace("dashboard.html");
     }
-  }  
-  
-  */
+}
 
 // --------------------
 // GET USER
 // --------------------
 export function getUser() {
-  return JSON.parse(localStorage.getItem("user"));
-}
+    try {
+      const data = localStorage.getItem("user");
+  
+      if (!data || data === "undefined") return null;
+  
+      return JSON.parse(data);
+    } catch (err) {
+      console.error("Failed to parse user:", err);
+      return null;
+    }
+  }
 
 // --------------------
 // GET TOKEN
 // --------------------
 
 export function getToken() {
-    return localStorage.getItem("token");
+    // return localStorage.getItem("token");
+    return sessionStorage.getItem("token");
   }
   

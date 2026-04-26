@@ -1,3 +1,4 @@
+import { showToast } from "../utils/notifications.js"; 
 // Store latest user location (shared)
 let userLocation = null;
 
@@ -79,20 +80,26 @@ export function createMap(lat, lng) {
       const city = data.address?.city || data.address?.town || "N/A";
   
       if (!road && !city) return null;
-  
-      console.log(`${city}, ${road} called from main function`);
       return `${city}, ${road}`;
     } catch (e) {
       console.error("Reverse geocoding failed:", e);
       return null;
     }
   }
+
+  let invalidRestaurantWarningShown = false;
   
   export function addRestaurantMarker(map, restaurant, icon, onClick, user, nearest) {
 
 
     if (!restaurant?.location?.coordinates) {
         console.warn("Missing coordinates:", restaurant);
+
+        if (!invalidRestaurantWarningShown) {
+            showToast("Some restaurants could not be displayed", "error");
+            invalidRestaurantWarningShown = true;
+          }
+
         return null;
     }
   
@@ -280,6 +287,10 @@ export function createMap(lat, lng) {
   
     try {
       const fetchedAddress = await getAddressSafe(latlng.lat, latlng.lng);
+
+      if (!fetchedAddress) {
+        showToast("Could not fetch address", "error");
+      }
   
       const finalText = fetchedAddress || "Location unavailable";
   

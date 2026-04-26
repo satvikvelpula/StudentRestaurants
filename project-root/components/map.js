@@ -19,6 +19,8 @@ function getPosition() {
 async function bootstrapApp() {
     try {
       const position = await getPosition();
+
+      showToast("Location detected 📍", "success");
   
       startApp(position.coords.latitude, position.coords.longitude);
   
@@ -44,6 +46,7 @@ export async function initMap(latitude, longitude, map) {
   let restaurants = [];
   try {
     restaurants = await getRestaurants();
+    showToast(`Loaded ${restaurants.length} restaurants`, "success");
     } catch (err) {
         console.error("Failed to fetch restaurants:", err);
         showToast("Could not load restaurants", "error");
