@@ -129,7 +129,6 @@ if (form) {
     // REGISTER USER
     // --------------------
 
-    console.log("Register password: ", password);
     try {
       await register(username, email, password);
 

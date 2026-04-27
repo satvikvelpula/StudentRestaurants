@@ -5,11 +5,10 @@ export async function requireAuth() {
   const token = getToken();
 
   if (!token) {
-    window.location.replace("login.html");
+    // window.location.replace("login.html");
     throw new Error("No token");
   }
 
-  try {
     const res = await fetchCurrentUser();
     const user = res?.data || res?.user || res;
 
@@ -17,8 +16,12 @@ export async function requireAuth() {
 
     localStorage.setItem("user", JSON.stringify(user));
     return user;
+}
 
-  } catch (err) {
+
+
+  /*catch (err) {
+    
     console.error("Auth failed", err);
 
     const status = err?.status || err?.response?.status;
@@ -32,5 +35,4 @@ export async function requireAuth() {
 
     // IMPORTANT: don't logout on network errors
     throw err;
-  }
-}
+  } */

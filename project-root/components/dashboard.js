@@ -1,20 +1,18 @@
-import { logout, getUser, clearAuthState } from "../api/auth.js";
+import { logout, clearAuthState } from "../api/auth.js";
 import { initNav } from "../components/nav.js";
-import { requireAuth } from "../utils/requireAuth.js";
 import { getRestaurants } from "../api/restaurants.js";
 import { deleteUser } from "../api/users.js";
 import { getAddressSafe } from "../components/mapView.js"; 
 import { getPosition } from "../utils/getLocation.js";
+import { loadAuthUser } from "../utils/authLoader.js";
 
+async function init() {
+    const user = await loadAuthUser();
+    if (!user) return;
+  }
+init();
+console.log(init());
 initNav();
-const user = await requireAuth();
-/*
-await requireAuth();
-const user = getUser();
-if (!user) {
-    window.location.replace("login.html");
-  }  
-    */
 
 
 const LOCATION_CACHE_KEY = "user_location_cache";
@@ -43,7 +41,6 @@ if (editBtn) {
 }
 
 if (deleteBtn) {
-    console.log(deleteBtn)
     deleteBtn.addEventListener("click", () => {
         confirmBox.classList.add("show");
         deleteError.textContent = "";

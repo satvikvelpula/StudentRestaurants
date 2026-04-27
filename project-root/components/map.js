@@ -10,6 +10,7 @@ import { extractFilterOptions, populateFilters, setupFilterEvents } from "../com
 import { filterRestaurants } from "../components/restaurantFilters.js";
 import { updateUI, fadeOutMarker } from "../components/updateUI.js";
 import { initNav } from "../components/nav.js";
+import { safeApi } from "../utils/safeApi.js";
 
 initNav();
 
@@ -48,7 +49,12 @@ function startApp(lat, lng) {
 export async function initMap(latitude, longitude, map) {
   let restaurants = [];
   try {
-    restaurants = await getRestaurants();
+    restaurants = await safeApi(
+        () => getRestaurants(),
+        [],
+        "Could not load restaurants (VPN or network issue)"
+      );
+      
     showToast(`Loaded ${restaurants.length} restaurants`, "success");
     } catch (err) {
         console.error("Failed to fetch restaurants:", err);
@@ -306,8 +312,9 @@ function renderRestaurantList(restaurants, map, nearest, searchQuery = "") {
     if (!currentRestaurantId) return;
   
     renderRestaurantProfile(restaurant, nearest);
-  
-    modal.classList.remove("hidden");
+
+    modal.classList.remove("closing"); 
+    modal.classList.add("open");
   
     setActiveTab("daily");
     loadMenu(currentRestaurantId, "daily");
@@ -329,7 +336,12 @@ function renderRestaurantList(restaurants, map, nearest, searchQuery = "") {
 
     if (closeBtn) {
     closeBtn.addEventListener("click", () => {
-        modal.classList.add("hidden");
+        modal.classList.remove("open");
+        modal.classList.add("closing");
+
+        setTimeout(() => {
+            modal.classList.remove("closing");
+        }, 200); // match CSS
     });
     }
       

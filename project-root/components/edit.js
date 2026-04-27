@@ -1,10 +1,9 @@
 import { getRestaurants } from "../api/restaurants.js";
 import { updateUser } from "../api/users.js";
-import { getUser } from "../api/auth.js";
-import { requireAuth } from "../utils/requireAuth.js";
 import { uploadAvatar } from "../api/users.js";
 import { checkUsernameAvailability } from "../api/users.js";
 import { initNav } from "../components/nav.js";
+import { loadAuthUser } from "../utils/authLoader.js";
 
 import {
   showToast,
@@ -21,8 +20,12 @@ import {
 // --------------------
 // AUTH + USER
 // --------------------
+async function init() {
+    const user = await loadAuthUser();
+    if (!user) return;
+  }
+init();
 initNav();
-const user = await requireAuth();
 
 // --------------------
 // STATE
@@ -46,20 +49,57 @@ if (user?.avatar && preview) {
   preview.src = `https://media2.edu.metropolia.fi/restaurant/uploads/${user.avatar}`;
 }
 
+function renderRestaurantState(type, message = "") {
+    const container = document.getElementById("favorite-container");
+    container.innerHTML = "";
+  
+    const el = document.createElement("div");
+    el.className = "restaurant-slot empty-state";
+  
+    if (type === "loading") {
+      el.textContent = "Loading restaurants...";
+    }
+  
+    if (type === "error") {
+      el.textContent = message || "Failed to load restaurants. Check your connection.";
+      el.classList.add("error");
+    }
+  
+    container.appendChild(el);
+  }
+  
+
+
 // --------------------
 // RESTAURANTS
 // --------------------
 async function loadRestaurants() {
-  try {
-    const restaurants = await getRestaurants();
-    restaurants.sort((a, b) => a.name.localeCompare(b.name));
-
-    allRestaurants = restaurants;
-    renderRestaurants(restaurants);
-  } catch (err) {
-    console.error("Failed to load restaurants", err);
+    renderRestaurantState("loading");
+  
+    try {
+      const restaurants = await getRestaurants();
+  
+      if (!restaurants || restaurants.length === 0) {
+        renderRestaurantState("error", "No restaurants found.");
+        return;
+      }
+  
+      restaurants.sort((a, b) => a.name.localeCompare(b.name));
+  
+      allRestaurants = restaurants;
+      renderRestaurants(restaurants);
+    } catch (err) {
+      console.error("Failed to load restaurants", err);
+  
+      renderRestaurantState(
+        "error",
+        "Could not load restaurants. Please check your connection or VPN."
+      );
+  
+      showToast("Restaurant data failed to load", "error");
+    }
   }
-}
+  
 
 loadRestaurants();
 
@@ -255,8 +295,6 @@ if (form) {
       const res = await uploadAvatar(selectedFile);
       avatarFilename = res.data.avatar;
     }
-
-    console.log("Edit's password: ", password);
 
     // --------------------
     // PAYLOAD

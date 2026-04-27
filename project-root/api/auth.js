@@ -23,8 +23,6 @@ export async function login(username, password) {
         localStorage.setItem("user", JSON.stringify(response.data));
       }
 
-    console.log("Logged in user:", response.data);
-
   return response;
 }
 
@@ -97,50 +95,5 @@ export function isLoggedIn() {
   // return !!localStorage.getItem("token");
   return !!sessionStorage.getItem("token");
 }
-
-/*
-
-export async function requireAuth() {
-    const token = getToken();
-  
-    if (!token) {
-      window.location.replace("login.html");
-      return false;
-    }
-  
-    try {
-      const res = await fetchCurrentUser();
-      // fetch safe
-      const user = res.data || res.user || res;
-      if (!user) throw new Error("No user returned");
-  
-      // sync fresh user
-      localStorage.setItem("user", JSON.stringify(user));
-      return true;
-    } catch (err) {
-
-      console.error("Auth check failed", err);
-
-      const status = err?.status || err?.response?.status;
-
-
-    if (status === 401) {
-        sessionStorage.removeItem("token");
-        localStorage.removeItem("user");
-        window.location.replace("login.html");
-    } else {
-        // network / server issue → DON'T log out
-        console.warn("Auth check failed, but keeping session");
-        return true;
-        }
-    }
-}
-
-export function redirectIfAuthenticated() {
-    if (isLoggedIn()) {
-    window.location.replace("dashboard.html");
-    }
-}
-*/
 
   

@@ -6,7 +6,6 @@ export async function getDailyMenu(restaurantId, lang = "en") {
 
 export async function getWeeklyMenu(restaurantId, lang = "en") {
   const fetched = await fetchData(`/restaurants/weekly/${restaurantId}/${lang}`);
-  console.log(fetched);
   return fetched;
 }
 

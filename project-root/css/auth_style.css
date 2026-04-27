@@ -142,6 +142,23 @@
   background: #e5e7eb;
 }
 
+.restaurant-slot.empty-state {
+  text-align: center;
+  padding: 14px;
+  color: var(--subtext);
+  font-size: 0.85rem;
+  background: var(--card);
+  border: 1px dashed var(--border);
+  border-left: 3px solid #dc2626;
+}
+
+.restaurant-slot.error {
+  color: #b91c1c;
+  font-weight: 500;
+}
+
+
+
 .favorite-restaurant-slots {
   display: flex;
   flex-direction: column;
