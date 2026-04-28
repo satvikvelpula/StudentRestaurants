@@ -1,9 +1,9 @@
 import { getRestaurants } from "../api/restaurants.js";
-import { updateUser } from "../api/users.js";
-import { uploadAvatar } from "../api/users.js";
-import { checkUsernameAvailability } from "../api/users.js";
+import { updateUser, uploadAvatar, checkUsernameAvailability } from "../api/users.js";
 import { initNav } from "../components/nav.js";
 import { loadAuthUser } from "../utils/authLoader.js";
+import { getAvatarSrc } from "../utils/avatar.js";
+
 
 import {
   showToast,
@@ -18,119 +18,144 @@ import {
 } from "../utils/validators.js";
 
 // --------------------
-// AUTH + USER
+// INIT
 // --------------------
-async function init() {
-    const user = await loadAuthUser();
-    if (!user) return;
-  }
 init();
-initNav();
+
+async function init() {
+  initNav();
+
+  const user = await loadAuthUser();
+  if (!user) return;
+
+  setupState(user);
+  setupUI(user);
+  setupAvatarRemoval(user);
+  setupEvents(user);
+
+  await loadRestaurants();
+}
 
 // --------------------
 // STATE
 // --------------------
 let allRestaurants = [];
-let selectedRestaurantId = user?.favouriteRestaurant || null;
+let selectedRestaurantId = null;
+let removeAvatar = false;
 
 let usernameTimer;
 let latestRequest = 0;
 let isUsernameAvailable = true;
 
-// --------------------
-// PREFILL UI
-// --------------------
-document.getElementById("username").value = user.username || "";
-document.getElementById("email").value = user.email || "";
 
-const preview = document.getElementById("profile-preview");
+let selectedFile = null;
 
-if (user?.avatar && preview) {
-  preview.src = `https://media2.edu.metropolia.fi/restaurant/uploads/${user.avatar}`;
+function setupState(user) {
+  selectedRestaurantId = user?.favouriteRestaurant || null;
 }
 
-function renderRestaurantState(type, message = "") {
-    const container = document.getElementById("favorite-container");
-    container.innerHTML = "";
-  
-    const el = document.createElement("div");
-    el.className = "restaurant-slot empty-state";
-  
-    if (type === "loading") {
-      el.textContent = "Loading restaurants...";
-    }
-  
-    if (type === "error") {
-      el.textContent = message || "Failed to load restaurants. Check your connection.";
-      el.classList.add("error");
-    }
-  
-    container.appendChild(el);
-  }
-  
+// --------------------
+// UI
+// --------------------
+function setupUI(user) {
+  document.getElementById("username").value = user.username || "";
+  document.getElementById("email").value = user.email || "";
 
+  renderAvatar(user);
+}
+
+function setupAvatarRemoval(user) {
+    const btn = document.getElementById("remove-avatar-btn");
+    const preview = document.getElementById("profile-preview");
+  
+    if (!btn || !preview) return;
+  
+    btn.addEventListener("click", () => {
+      // clear selected file
+      selectedFile = null;
+  
+      // mark for removal
+      removeAvatar = true;
+  
+      // update preview to initials avatar
+      preview.src = getAvatarSrc({ ...user, avatar: null });
+  
+      showToast("Profile picture removed (not saved yet)", "success");
+    });
+  }
+
+function renderAvatar(user) {
+    const preview = document.getElementById("profile-preview");
+    if (!preview) return;
+  
+    preview.src = getAvatarSrc(user);
+  }
+
+// --------------------
+// EVENTS
+// --------------------
+function setupEvents(user) {
+  setupUsernameValidation(user);
+  setupAvatarUpload();
+  setupFormSubmit(user);
+  setupSearch();
+}
 
 // --------------------
 // RESTAURANTS
 // --------------------
-async function loadRestaurants() {
-    renderRestaurantState("loading");
-  
-    try {
-      const restaurants = await getRestaurants();
-  
-      if (!restaurants || restaurants.length === 0) {
-        renderRestaurantState("error", "No restaurants found.");
-        return;
-      }
-  
-      restaurants.sort((a, b) => a.name.localeCompare(b.name));
-  
-      allRestaurants = restaurants;
-      renderRestaurants(restaurants);
-    } catch (err) {
-      console.error("Failed to load restaurants", err);
-  
-      renderRestaurantState(
-        "error",
-        "Could not load restaurants. Please check your connection or VPN."
-      );
-  
-      showToast("Restaurant data failed to load", "error");
-    }
+function renderRestaurantState(type, message = "") {
+  const container = document.getElementById("favorite-container");
+  container.innerHTML = "";
+
+  const el = document.createElement("div");
+  el.className = "restaurant-slot empty-state";
+
+  if (type === "loading") el.textContent = "Loading restaurants...";
+  if (type === "error") {
+    el.textContent = message || "Failed to load restaurants.";
+    el.classList.add("error");
   }
-  
 
-loadRestaurants();
-
-const searchInput = document.getElementById("restaurant-search");
-
-let searchTimer;
-
-if (searchInput) {
-  searchInput.addEventListener("input", (e) => {
-    clearTimeout(searchTimer);
-
-    searchTimer = setTimeout(() => {
-      const query = e.target.value.toLowerCase().trim();
-
-      const filtered = allRestaurants.filter((r) =>
-        r.name.toLowerCase().includes(query)
-      );
-
-      renderRestaurants(filtered, query);
-    }, 150);
-  });
+  container.appendChild(el);
 }
 
-function renderRestaurants(restaurants, searchQuery = "") {
+async function loadRestaurants() {
+  renderRestaurantState("loading");
+
+  try {
+    const restaurants = await getRestaurants();
+
+    if (!restaurants?.length) {
+      renderRestaurantState("error", "No restaurants found.");
+      return;
+    }
+
+    restaurants.sort((a, b) => a.name.localeCompare(b.name));
+
+    allRestaurants = restaurants;
+    renderRestaurants(restaurants);
+
+  } catch (err) {
+    console.error(err);
+
+    renderRestaurantState(
+      "error",
+      "Could not load restaurants. Check connection/VPN."
+    );
+
+    showToast("Restaurant data failed to load", "error");
+  }
+}
+
+function renderRestaurants(restaurants, query = "") {
   const container = document.getElementById("favorite-container");
   container.innerHTML = "";
 
   if (!restaurants.length) {
     const empty = document.createElement("div");
     empty.className = "restaurant-slot empty";
-    empty.textContent = `Restaurant "${searchQuery}" not found`;
+    empty.textContent = `Restaurant "${query}" not found`;
     container.appendChild(empty);
     return;
   }
@@ -163,25 +188,44 @@ function renderRestaurants(restaurants, searchQuery = "") {
 }
 
 // --------------------
-// LIVE USERNAME CHECK
+// SEARCH
 // --------------------
-const usernameInput = document.getElementById("username");
+function setupSearch() {
+  const searchInput = document.getElementById("restaurant-search");
+  let searchTimer;
 
-if (usernameInput) {
+  if (!searchInput) return;
+
+  searchInput.addEventListener("input", (e) => {
+    clearTimeout(searchTimer);
+
+    searchTimer = setTimeout(() => {
+      const query = e.target.value.toLowerCase().trim();
+
+      const filtered = allRestaurants.filter(r =>
+        r.name.toLowerCase().includes(query)
+      );
+
+      renderRestaurants(filtered, query);
+    }, 150);
+  });
+}
+
+// --------------------
+// USERNAME VALIDATION
+// --------------------
+function setupUsernameValidation(user) {
+  const input = document.getElementById("username");
+  if (!input) return;
+
   const originalUsername = user.username;
 
-  usernameInput.addEventListener("input", () => {
+  input.addEventListener("input", () => {
     clearTimeout(usernameTimer);
 
-    const value = usernameInput.value.trim();
+    const value = input.value.trim();
 
-    if (value.length < 3) {
-      isUsernameAvailable = true;
-      clearFieldError("username");
-      return;
-    }
-
-    if (value === originalUsername) {
+    if (value.length < 3 || value === originalUsername) {
       isUsernameAvailable = true;
       clearFieldError("username");
       return;
@@ -202,8 +246,9 @@ if (usernameInput) {
         } else {
           clearFieldError("username");
         }
+
       } catch (err) {
-        console.error("Username check failed", err);
+        console.error(err);
       }
     }, 400);
   });
@@ -212,30 +257,34 @@ if (usernameInput) {
 // --------------------
 // AVATAR
 // --------------------
-const fileInput = document.getElementById("profilePic");
-let selectedFile = null;
+function setupAvatarUpload() {
+  const fileInput = document.getElementById("profilePic");
+  const preview = document.getElementById("profile-preview");
 
-if (fileInput) {
+  if (!fileInput) return;
+
   fileInput.addEventListener("change", () => {
     const file = fileInput.files[0];
     if (!file) return;
 
     selectedFile = file;
+    removeAvatar = false;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      preview.src = e.target.result;
-    };
+        preview.src = e.target?.result
+      };
     reader.readAsDataURL(file);
   });
 }
 
 // --------------------
-// FORM
+// FORM SUBMIT
 // --------------------
-const form = document.querySelector(".auth-form");
+function setupFormSubmit(user) {
+  const form = document.querySelector(".auth-form");
+  if (!form) return;
 
-if (form) {
   enableAutoErrorClear("auth-form");
 
   form.addEventListener("submit", async (e) => {
@@ -246,86 +295,64 @@ if (form) {
 
     let hasError = false;
 
-    // --------------------
-    // VALIDATION
-    // --------------------
+    // validation
     const usernameError = validateUsername(username);
     if (usernameError) {
       showFieldError("username", usernameError);
       hasError = true;
     }
 
-    if (username !== user.username && isUsernameAvailable === false) {
+    if (username !== user.username && !isUsernameAvailable) {
       showFieldError("username", "Username is already taken");
       hasError = true;
     }
 
     if (password !== "") {
-        // user typed something
-      
-        if (password.trim() === "") {
-          showFieldError("password", "Password cannot be empty or spaces");
-          hasError = true;
-        } else {
-          const passwordError = validatePassword(password);
-          if (passwordError) {
-            showFieldError("password", passwordError);
-            hasError = true;
-          }
-        }
-    }
-
-    /*
-    if (password.trim() !== "") {
-      const passwordError = validatePassword(password);
-      if (passwordError) {
-        showFieldError("password", passwordError);
+      if (password.trim() === "") {
+        showFieldError("password", "Password cannot be empty");
         hasError = true;
+      } else {
+        const err = validatePassword(password);
+        if (err) {
+          showFieldError("password", err);
+          hasError = true;
+        }
       }
     }
-      */
 
     if (hasError) return;
-    // --------------------
-    // AVATAR
-    // --------------------
+
+    // avatar upload
     let avatarFilename = user.avatar;
 
-    if (selectedFile) {
-      const res = await uploadAvatar(selectedFile);
-      avatarFilename = res.data.avatar;
-    }
-
-    // --------------------
-    // PAYLOAD
-    // --------------------
-    const updatedUserData = {
-      username,
-      avatar: avatarFilename
-    };
-
-    if (selectedRestaurantId) {
-        updatedUserData.favouriteRestaurant = selectedRestaurantId;
-      } else {
-        updatedUserData.favouriteRestaurant = "000000000000000000000000";
+    try {
+        if (selectedFile) {
+          const res = await uploadAvatar(selectedFile);
+          avatarFilename = res.data.avatar;
+        } else if (removeAvatar) {
+          avatarFilename = "";
+        }
+      } catch (err) {
+        showToast("Avatar upload failed", "error");
+        return;
       }
 
-    if (password.trim() !== "") {
-        updatedUserData.password = password;
+    // payload
+    const payload = {
+      username,
+      avatar: avatarFilename,
+      favouriteRestaurant: selectedRestaurantId || "000000000000000000000000"
+    };
+
+    if (password.trim()) {
+      payload.password = password;
     }
 
-      
-    // --------------------
-    // API CALL
-    // --------------------
+    // API call
     try {
-      await updateUser(updatedUserData);
+      await updateUser(payload);
 
-      const updatedUser = {
-        ...user,
-        ...updatedUserData
-      };
-
+      const updatedUser = { ...user, ...payload };
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
       showToast("Profile updated", "success");
@@ -335,14 +362,8 @@ if (form) {
       }, 500);
 
     } catch (err) {
-        console.error("Update failed", err);
-        const fallbackFields = ["username", "password"];
-
-        fallbackFields.forEach((id) => {
-            showFieldError(id, null);
-        });
-
-        showFieldError(fallbackFields.pop(), "Something went wrong. Try again. ")
-      }
+      console.error(err);
+      showToast("Update failed", "error");
+    }
   });
 }

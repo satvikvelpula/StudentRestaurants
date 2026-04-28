@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Edit Profile Picture</title>
+  <title>Edit Profile </title>
   <link rel="stylesheet" href="../css/home_style.css">
   <link rel="stylesheet" href="../css/auth_style.css">
   <script type="module" src="../components/edit.js"></script>
@@ -20,7 +20,6 @@
 
             <img
               src="https://via.placeholder.com/80"
-              alt="Profile Picture"
               class="profile-pic"
               id="profile-preview"
             >
@@ -28,6 +27,11 @@
             <label for="profilePic" class="change-pic-btn">
               Change Picture
             </label>
+
+            <button type="button" id="remove-avatar-btn" class="change-pic-btn danger-light">
+              Remove Picture
+            </button>
+            
           
             <input type="file" id="profilePic" accept="image/*">
           

@@ -1,3 +1,19 @@
+a,
+a:visited,
+a:hover,
+a:active {
+  text-decoration: none !important;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+
 .auth-container {
     display: flex;
     align-items: center;
@@ -141,6 +157,17 @@
 .change-pic-btn:hover {
   background: #e5e7eb;
 }
+
+.danger-light {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.danger-light:hover {
+  background: #fee2e2;
+}
+
 
 .restaurant-slot.empty-state {
   text-align: center;
@@ -336,13 +363,13 @@
 }
 
 .action-btn.logout-btn {
-  background: #ef4444;
+  background: #1f2933;
   border: none;
   color: white;
 }
 
 .action-btn.logout-btn:hover {
-  background: #dc2626;
+  background: #111827;
 }
 
 .action-btn.logout-btn,
@@ -367,21 +394,21 @@
 }
 
 .action-btn.delete-btn {
-  background: #7f1d1d;
+  background: #1f2933;
   border: none;
   color: white;
 }
 
 .action-btn.delete-btn:hover {
-  background: #991b1b;
+  background: #111827;
 }
 
 .logout-btn {
-  background: #dc2626; /* red for logout */
+  background: #1f2933;
 }
 
 .logout-btn:hover {
-  background: #b91c1c;
+  background: #111827;
 }
 
 .delete-actions {
