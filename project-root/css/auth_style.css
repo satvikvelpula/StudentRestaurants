@@ -108,41 +108,6 @@ button {
     text-decoration: underline;
   }
 
-  /*
-
-  .password-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-  }
-  
-  .password-wrapper input {
-    width: 100%;
-    padding-right: 72px;
-  }
-  
-  .toggle-password-btn {
-    position: absolute;
-    right: 10px;
-    border: none;
-    background: transparent;
-  
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--subtext);
-  
-    cursor: pointer;
-    padding: 4px 6px;
-  
-    transition: color 0.2s ease;
-  }
-  
-  .toggle-password-btn:hover {
-    color: var(--text);
-  }
-
-  */
-
   .password-row {
     display: flex;
     gap: 8px;
