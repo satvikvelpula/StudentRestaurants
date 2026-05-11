@@ -6,7 +6,6 @@ import { getAddressSafe } from "../components/mapView.js";
 import { getPosition } from "../utils/getLocation.js";
 import { loadAuthUser } from "../utils/authLoader.js";
 import { getAvatarSrc } from "../utils/avatar.js";
-import { showToast } from "../utils/notifications.js";
 
 
 

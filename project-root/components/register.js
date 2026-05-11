@@ -23,6 +23,46 @@ let usernameTimer;
 let latestUsernameRequest = 0;
 
 const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const confirmPasswordInput = document.getElementById("confirm-password");
+
+const togglePasswordBtn = document.getElementById("toggle-password");
+const toggleConfirmBtn = document.getElementById("toggle-confirm-password");
+
+let isPasswordVisible = false;
+let isConfirmVisible = false;
+
+
+// Main password toggle
+if (togglePasswordBtn && passwordInput) {
+  togglePasswordBtn.addEventListener("click", () => {
+    isPasswordVisible = !isPasswordVisible;
+
+    passwordInput.type = isPasswordVisible
+      ? "text"
+      : "password";
+
+    togglePasswordBtn.textContent = isPasswordVisible
+      ? "Hide"
+      : "Show";
+  });
+}
+
+
+// Confirm password toggle
+if (toggleConfirmBtn && confirmPasswordInput) {
+  toggleConfirmBtn.addEventListener("click", () => {
+    isConfirmVisible = !isConfirmVisible;
+
+    confirmPasswordInput.type = isConfirmVisible
+      ? "text"
+      : "password";
+
+    toggleConfirmBtn.textContent = isConfirmVisible
+      ? "Hide"
+      : "Show";
+  });
+}
 
 
 // --------------------

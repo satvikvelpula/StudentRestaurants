@@ -223,15 +223,6 @@ a:hover {
     overflow: hidden;
   }
 
-/*
-  #map-popup {
-    position: absolute;
-    z-index: 1000;
-  
-    transform: translate(-50%, -140%);
-    pointer-events: none;
-  }
-*/
 
   .map-popup {
     background: var(--card);
@@ -243,16 +234,7 @@ a:hover {
     min-width: 160px;
     text-align: center;
   }
-  /*
-
-  #map-popup {
-    position: absolute;
-    z-index: 999;
-    pointer-events: none;
-  
-    transform: translate(-50%, -140%);
-  }  
-    */
+ 
 
     #map-popup {
       position: absolute;

@@ -127,15 +127,6 @@ export function createMap(lat, lng) {
     } else {
         console.warn("Missing distance:", restaurant);
     }
-
-    /*
-  
-    const distance =
-      restaurant.distance < 1
-        ? `${Math.round(restaurant.distance * 1000)} m`
-        : `${restaurant.distance.toFixed(1)} km`;
-
-    */
   
     let typeClass = "";
     if (isFavourite) typeClass = "favourite";

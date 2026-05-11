@@ -108,6 +108,84 @@ button {
     text-decoration: underline;
   }
 
+  /*
+
+  .password-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .password-wrapper input {
+    width: 100%;
+    padding-right: 72px;
+  }
+  
+  .toggle-password-btn {
+    position: absolute;
+    right: 10px;
+    border: none;
+    background: transparent;
+  
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--subtext);
+  
+    cursor: pointer;
+    padding: 4px 6px;
+  
+    transition: color 0.2s ease;
+  }
+  
+  .toggle-password-btn:hover {
+    color: var(--text);
+  }
+
+  */
+
+  .password-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .password-input-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .password-input-group input {
+    width: 100%;
+  }
+  
+  .toggle-password-btn {
+    height: 40px;
+    padding: 0 12px;
+  
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  
+    background: var(--card);
+    color: var(--subtext);
+  
+    font-size: 0.8rem;
+    font-weight: 600;
+  
+    cursor: pointer;
+  
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease,
+      color 0.2s ease;
+  }
+  
+  .toggle-password-btn:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+    color: var(--text);
+  }
+
 
 /* Profile Picture Section */
 .profile-pic-section {

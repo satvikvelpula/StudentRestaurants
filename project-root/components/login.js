@@ -13,6 +13,23 @@ import {
 
 
 const form = document.getElementById("login-form");
+let isPasswordVisible = false;
+
+const passwordInput = document.getElementById("Atomize");
+const togglePasswordBtn = document.getElementById("toggle-password"); // New to HTML
+
+// Toggle password visibility
+if (togglePasswordBtn && passwordInput) {
+  togglePasswordBtn.addEventListener("click", () => {
+    isPasswordVisible.valueOf() ? isPasswordVisible = !isPasswordVisible : isPasswordVisible = true;
+      passwordInput.type = isPasswordVisible ? "text" : "password";
+      togglePasswordBtn.textContent = isPasswordVisible
+          ? "Hide"
+          : "Show";
+  });
+}
+
+
 
 if (form) {
     enableAutoErrorClear("login-form");
@@ -20,7 +37,7 @@ if (form) {
         e.preventDefault();
       
         const username = document.getElementById("username").value;
-        const password = document.getElementById("Atomize").value;
+        const password = passwordInput.value;
 
         let hasError = false;
 
